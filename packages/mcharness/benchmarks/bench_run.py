@@ -19,33 +19,39 @@ indexing is slower than a dict — which changed the cache's implementation.
 
 ## What the numbers actually said
 
-Measured at 100,000 trials, medians on the reference machine:
+Measured at 100,000 trials, medians on the reference machine, in a single
+uncontended sweep:
 
-    serial_dataframe   1516 ms
-    serial_uncached      49 ms
-    serial_cached        48 ms
-    ray_uncached        187 ms
-    ray_cached          117 ms
+    serial_dataframe   1167 ms
+    serial_cached        40 ms
+    serial_uncached      43 ms
+    ray_cached          197 ms
+    ray_uncached        220 ms
 
 Two results, and neither is the one this package was expected to demonstrate.
 
-**Almost all of the win is DataFrame to dict — about 30x.** The array cache adds a
-few percent on top. If a study is slow and it does a `.loc` per trial, that is the
-whole problem, and no amount of parallelism addresses it.
+**Almost all of the win is DataFrame to dict — about 29x.** The cache adds ~6% on
+top of that. If a study is slow and it does a `.loc` per trial, that is the whole
+problem, and no amount of parallelism addresses it.
 
-**Ray is slower than a serial loop here, by 2-4x.** These trials are one normal
-draw each, so batching, serializing, scheduling and returning costs far more than
-the work. That is not a criticism of Ray; it is what fixed per-batch overhead means.
+**Ray is 5x slower than a serial loop here.** These trials are one normal draw
+each, so batching, serializing, scheduling and returning costs far more than the
+work. That is not a criticism of Ray; it is what fixed per-batch overhead means.
 
-The `costly/` case exists to find the crossover, and it is further out than
-intuition suggests: at 400 inner operations per trial, Ray reaches roughly parity
-(521 ms against 545 ms) rather than winning outright. Parallelism pays when a trial
-is expensive, and "expensive" here means substantially more than a few hundred
-arithmetic operations.
+The `costly/` case is the crossover, and Ray wins it clearly: **105 ms against
+406 ms, 3.9x**, at 400 inner operations per trial. So the rule is not "Ray is slow"
+— it is that per-trial work has to clear the dispatch cost, and one random draw
+does not come close.
 
-The reason to publish this rather than a flattering subset is that it is the
-actual advice: fix the lookup first, measure, and reach for a cluster only once a
-trial is heavy enough to earn one.
+A measurement caution, learned the hard way here: an earlier run of this same case
+showed Ray at parity rather than 3.9x ahead, because another benchmark was running
+on the same machine. Parallel benchmarks are unusually sensitive to that, since a
+busy machine removes the cores the parallel version depends on and barely touches
+the serial one. These numbers come from a sweep with nothing else running.
+
+The reason to publish all of it rather than a flattering subset is that it is the
+actual advice: fix the lookup first, measure, and reach for a cluster once a trial
+is heavy enough to earn one.
 
 Run with:
 

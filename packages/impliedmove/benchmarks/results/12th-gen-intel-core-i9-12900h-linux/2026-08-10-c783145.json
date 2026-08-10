@@ -2,8 +2,8 @@
   "schema": 1,
   "package": "impliedmove",
   "version": "0.0.1.dev0",
-  "git_sha": "4edf4f1",
-  "timestamp": "2026-08-10T14:12:09+00:00",
+  "git_sha": "c783145",
+  "timestamp": "2026-08-10T14:28:07+00:00",
   "hardware": {
     "id": "12th-gen-intel-core-i9-12900h-linux",
     "cpu": "12th Gen Intel(R) Core(TM) i9-12900H",
@@ -21,11 +21,11 @@
         "bad_factor_rate": 0.16666666666666666
       },
       "metric": "seconds",
-      "n": 78,
-      "mean": 0.014170112877857322,
-      "median": 0.012785404513124377,
-      "stddev": 0.005408688779281438,
-      "min": 0.011991909006610513
+      "n": 88,
+      "mean": 0.011431940735995093,
+      "median": 0.011412327497964725,
+      "stddev": 0.00019651337228456962,
+      "min": 0.011080086987931281
     }
   ]
 }

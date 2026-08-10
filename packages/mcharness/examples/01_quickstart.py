@@ -104,22 +104,26 @@ def _(mo):
 
         | implementation | median |
         | --- | ---: |
-        | serial, DataFrame `.loc` per trial | 1516 ms |
-        | serial, dict lookup | 49 ms |
-        | serial, cached lookup | 48 ms |
-        | Ray, dict lookup | 187 ms |
-        | Ray, cached lookup | 117 ms |
+        | serial, DataFrame `.loc` per trial | 1167 ms |
+        | serial, cached lookup | 40 ms |
+        | serial, dict lookup | 43 ms |
+        | Ray, cached lookup | 197 ms |
+        | Ray, dict lookup | 220 ms |
 
-        **Almost the entire win is DataFrame → dict, about 30×.** The array cache
-        adds a few percent. If a study is slow and does a `.loc` per trial, that is
-        the whole problem and parallelism does not address it.
+        **Almost the entire win is DataFrame → dict, about 29×.** The cache adds
+        ~6%. If a study is slow and does a `.loc` per trial, that is the whole
+        problem and parallelism does not address it.
 
-        **Ray is 2–4× slower than the serial loop here.** These trials are one draw
-        each, so dispatch and serialization cost far more than the work. Raising the
-        per-trial cost to 400 inner operations only brings Ray to rough parity.
+        **Ray is 5× slower than the serial loop here** — these trials are one draw
+        each, so dispatch costs far more than the work.
 
-        Parallelism pays when a trial is expensive. Fix the lookup first, measure,
-        and reach for a cluster once a trial is heavy enough to earn one.
+        Give a trial real work to do and that reverses: at 400 inner operations per
+        trial, Ray runs in **105 ms against 406 ms serial, 3.9×**. The rule is not
+        "Ray is slow"; it is that per-trial work has to clear the dispatch cost, and
+        one random draw does not come close.
+
+        Fix the lookup first, measure, and reach for a cluster once a trial is heavy
+        enough to earn one.
         """
     )
     return
