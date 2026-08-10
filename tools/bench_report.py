@@ -101,10 +101,21 @@ def collect_hardware() -> dict[str, Any]:
 
 
 def git_sha() -> str:
-    """Return the current commit SHA, suffixed with ``-dirty`` if the tree is modified."""
+    """Return the current commit SHA, suffixed with ``-dirty`` if the tree is modified.
+
+    Results files are excluded from the dirtiness check. They are this script's own
+    output, so counting them would mark every run dirty the moment it wrote
+    anything — and the flag is meant to warn that the *code* being measured is
+    uncommitted, which is a different question.
+    """
     sha = _run(["git", "-C", str(REPO_ROOT), "rev-parse", "--short", "HEAD"])
-    dirty = _run(["git", "-C", str(REPO_ROOT), "status", "--porcelain"], default="")
-    return f"{sha}-dirty" if dirty else sha
+    status = _run(["git", "-C", str(REPO_ROOT), "status", "--porcelain"], default="")
+    changed = [
+        line
+        for line in status.splitlines()
+        if line.strip() and "/benchmarks/results/" not in line
+    ]
+    return f"{sha}-dirty" if changed else sha
 
 
 def package_version(package: str) -> str:

@@ -128,11 +128,19 @@ jobs:
 
       - if: matrix.package == 'slatekit'
         name: cargo fmt
-        run: cargo fmt --manifest-path rust/Cargo.toml -- --check
+        # --all: the manifest is a workspace root with no targets of its own, so
+        # without it cargo exits "Failed to find targets" instead of formatting.
+        run: cargo fmt --all --manifest-path rust/Cargo.toml -- --check
 
+      # Scoped to the core crate, and that is the point of the crate split: core
+      # has no pyo3 dependency, so linting, testing and covering it need no Python
+      # interpreter at all. Adding --workspace pulls in slatekit-native, whose
+      # abi3-py311 feature then fails against whatever python3 the runner happens
+      # to have. The native crate is ~120 lines of marshalling and is exercised by
+      # the Python suite above.
       - if: matrix.package == 'slatekit'
         name: cargo clippy
-        run: cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
+        run: cargo clippy -p slatekit-core --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 
       - if: matrix.package == 'slatekit'
         name: cargo test

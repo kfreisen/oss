@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "package": "mcharness",
+  "version": "0.0.1.dev0",
+  "git_sha": "4edf4f1-dirty",
+  "timestamp": "2026-08-10T14:12:27+00:00",
+  "hardware": {
+    "id": "12th-gen-intel-core-i9-12900h-linux",
+    "cpu": "12th Gen Intel(R) Core(TM) i9-12900H",
+    "cores": 20,
+    "ram_gb": 62.5,
+    "os": "Linux 6.17.9-76061709-generic",
+    "python": "3.12.13"
+  },
+  "cases": [
+    {
+      "name": "study/20000trials",
+      "impl": "serial_dataframe",
+      "params": {
+        "trials": 20000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.2859975339767213,
+      "median": 0.27648166700964794,
+      "stddev": 0.029840267037736793,
+      "min": 0.2620757229742594
+    },
+    {
+      "name": "study/100000trials",
+      "impl": "serial_dataframe",
+      "params": {
+        "trials": 100000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 1.485569770001651,
+      "median": 1.5077323730220087,
+      "stddev": 0.06550138342712818,
+      "min": 1.4118622319656424
+    },
+    {
+      "name": "study/20000trials",
+      "impl": "serial_uncached",
+      "params": {
+        "trials": 20000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.01106604035400475,
+      "median": 0.010802513977978379,
+      "stddev": 0.0006386647781570308,
+      "min": 0.010601307032629848
+    },
+    {
+      "name": "study/100000trials",
+      "impl": "serial_uncached",
+      "params": {
+        "trials": 100000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.055344802987140916,
+      "median": 0.05560591199900955,
+      "stddev": 0.0011912279110912506,
+      "min": 0.054044679971411824
+    },
+    {
+      "name": "study/20000trials",
+      "impl": "serial_cached",
+      "params": {
+        "trials": 20000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.010890594023900727,
+      "median": 0.011024914041627198,
+      "stddev": 0.000494634727818823,
+      "min": 0.010342672001570463
+    },
+    {
+      "name": "study/100000trials",
+      "impl": "serial_cached",
+      "params": {
+        "trials": 100000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.08197583768439169,
+      "median": 0.09108476201072335,
+      "stddev": 0.029010341355353485,
+      "min": 0.04950416705105454
+    },
+    {
+      "name": "study/20000trials",
+      "impl": "ray_uncached",
+      "params": {
+        "trials": 20000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.5639686269957261,
+      "median": 0.011230153031647205,
+      "stddev": 0.9590791215585485,
+      "min": 0.009258507983759046
+    },
+    {
+      "name": "study/100000trials",
+      "impl": "ray_uncached",
+      "params": {
+        "trials": 100000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.29396310200293857,
+      "median": 0.16694376897066832,
+      "stddev": 0.33998190833917913,
+      "min": 0.035778403049334884
+    },
+    {
+      "name": "study/20000trials",
+      "impl": "ray_cached",
+      "params": {
+        "trials": 20000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.053257143998052925,
+      "median": 0.044204025994986296,
+      "stddev": 0.02627617336866329,
+      "min": 0.032704467012081295
+    },
+    {
+      "name": "study/100000trials",
+      "impl": "ray_cached",
+      "params": {
+        "trials": 100000,
+        "entities": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.22196744232981777,
+      "median": 0.19606436998583376,
+      "stddev": 0.10448110957050366,
+      "min": 0.13287450099596754
+    },
+    {
+      "name": "costly/4000trials",
+      "impl": "serial",
+      "params": {
+        "trials": 4000,
+        "inner_steps": 400
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.5191580250005549,
+      "median": 0.515881945961155,
+      "stddev": 0.06769987066468267,
+      "min": 0.45315567002398893
+    },
+    {
+      "name": "costly/4000trials",
+      "impl": "ray",
+      "params": {
+        "trials": 4000,
+        "inner_steps": 400
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.14742945501348004,
+      "median": 0.15120430901879445,
+      "stddev": 0.02946905058465275,
+      "min": 0.11625486699631438
+    }
+  ]
+}

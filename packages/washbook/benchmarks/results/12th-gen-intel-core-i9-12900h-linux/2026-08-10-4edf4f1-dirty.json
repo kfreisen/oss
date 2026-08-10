@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "package": "washbook",
+  "version": "0.0.1.dev0",
+  "git_sha": "4edf4f1-dirty",
+  "timestamp": "2026-08-10T14:15:14+00:00",
+  "hardware": {
+    "id": "12th-gen-intel-core-i9-12900h-linux",
+    "cpu": "12th Gen Intel(R) Core(TM) i9-12900H",
+    "cores": 20,
+    "ram_gb": 62.5,
+    "os": "Linux 6.17.9-76061709-generic",
+    "python": "3.12.13"
+  },
+  "cases": [
+    {
+      "name": "cooldown/10sym_x_5000bar",
+      "impl": "polars_asof",
+      "params": {
+        "symbols": 10,
+        "bars": 5000,
+        "rows": 50000
+      },
+      "metric": "seconds",
+      "n": 83,
+      "mean": 0.003008841795016484,
+      "median": 0.0029318550368770957,
+      "stddev": 0.0006870028757790792,
+      "min": 0.0021125079947523773
+    },
+    {
+      "name": "cooldown/100sym_x_500bar",
+      "impl": "polars_asof",
+      "params": {
+        "symbols": 100,
+        "bars": 500,
+        "rows": 50000
+      },
+      "metric": "seconds",
+      "n": 299,
+      "mean": 0.0035247908518525046,
+      "median": 0.0028798020211979747,
+      "stddev": 0.003419771406842443,
+      "min": 0.0020579060073941946
+    },
+    {
+      "name": "cooldown/1000sym_x_50bar",
+      "impl": "polars_asof",
+      "params": {
+        "symbols": 1000,
+        "bars": 50,
+        "rows": 50000
+      },
+      "metric": "seconds",
+      "n": 126,
+      "mean": 0.004556946431948167,
+      "median": 0.003116450010566041,
+      "stddev": 0.005298554553585688,
+      "min": 0.0023593369987793267
+    },
+    {
+      "name": "cooldown/3000sym_x_500bar",
+      "impl": "polars_asof",
+      "params": {
+        "symbols": 3000,
+        "bars": 500,
+        "rows": 1500000
+      },
+      "metric": "seconds",
+      "n": 17,
+      "mean": 0.05955138118074769,
+      "median": 0.051158999965991825,
+      "stddev": 0.030723433287423205,
+      "min": 0.04472475900547579
+    },
+    {
+      "name": "cooldown/10sym_x_5000bar",
+      "impl": "baseline_serial",
+      "params": {
+        "symbols": 10,
+        "bars": 5000,
+        "rows": 50000
+      },
+      "metric": "seconds",
+      "n": 5,
+      "mean": 0.06501361900009214,
+      "median": 0.05167561600683257,
+      "stddev": 0.04575398826534902,
+      "min": 0.02972533699357882
+    },
+    {
+      "name": "cooldown/100sym_x_500bar",
+      "impl": "baseline_serial",
+      "params": {
+        "symbols": 100,
+        "bars": 500,
+        "rows": 50000
+      },
+      "metric": "seconds",
+      "n": 5,
+      "mean": 0.06433142599416897,
+      "median": 0.06721652997657657,
+      "stddev": 0.009724788803018568,
+      "min": 0.048143890977371484
+    },
+    {
+      "name": "cooldown/1000sym_x_50bar",
+      "impl": "baseline_serial",
+      "params": {
+        "symbols": 1000,
+        "bars": 50,
+        "rows": 50000
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.4723214990226552,
+      "median": 0.5071078630280681,
+      "stddev": 0.07735818833720885,
+      "min": 0.3836772050126456
+    },
+    {
+      "name": "cooldown/3000sym_x_500bar",
+      "impl": "baseline_serial",
+      "params": {
+        "symbols": 3000,
+        "bars": 500,
+        "rows": 1500000
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 11.38118279032642,
+      "median": 11.384857675991952,
+      "stddev": 0.13965069621101509,
+      "min": 11.23973092000233
+    }
+  ]
+}

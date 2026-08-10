@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "package": "venuematch",
+  "version": "0.0.1.dev0",
+  "git_sha": "4edf4f1-dirty",
+  "timestamp": "2026-08-10T14:14:31+00:00",
+  "hardware": {
+    "id": "12th-gen-intel-core-i9-12900h-linux",
+    "cpu": "12th Gen Intel(R) Core(TM) i9-12900H",
+    "cores": 20,
+    "ram_gb": 62.5,
+    "os": "Linux 6.17.9-76061709-generic",
+    "python": "3.12.13"
+  },
+  "cases": [
+    {
+      "name": "resolve/250events",
+      "impl": "blocked",
+      "params": {
+        "events": 250,
+        "records": 500
+      },
+      "metric": "seconds",
+      "n": 110,
+      "mean": 0.00994694351472638,
+      "median": 0.008997796481708065,
+      "stddev": 0.004347640610714106,
+      "min": 0.00797125999815762
+    },
+    {
+      "name": "resolve/1000events",
+      "impl": "blocked",
+      "params": {
+        "events": 1000,
+        "records": 2000
+      },
+      "metric": "seconds",
+      "n": 10,
+      "mean": 0.10780461039976216,
+      "median": 0.09191075601847842,
+      "stddev": 0.04211210420387137,
+      "min": 0.07569966302253306
+    },
+    {
+      "name": "resolve/2000events",
+      "impl": "blocked",
+      "params": {
+        "events": 2000,
+        "records": 4000
+      },
+      "metric": "seconds",
+      "n": 5,
+      "mean": 0.3491299130022526,
+      "median": 0.36030215601203963,
+      "stddev": 0.05170515095813011,
+      "min": 0.2914667620207183
+    },
+    {
+      "name": "resolve/8000events",
+      "impl": "blocked",
+      "params": {
+        "events": 8000,
+        "records": 16000
+      },
+      "metric": "seconds",
+      "n": 5,
+      "mean": 5.00387854980072,
+      "median": 4.990305942017585,
+      "stddev": 0.11177706634061349,
+      "min": 4.884262353996746
+    },
+    {
+      "name": "resolve/250events",
+      "impl": "all_pairs",
+      "params": {
+        "events": 250,
+        "records": 500
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 0.27402507930916425,
+      "median": 0.23855607898440212,
+      "stddev": 0.06247489609461746,
+      "min": 0.23735760198906064
+    },
+    {
+      "name": "resolve/1000events",
+      "impl": "all_pairs",
+      "params": {
+        "events": 1000,
+        "records": 2000
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 4.072653345336827,
+      "median": 4.056283246027306,
+      "stddev": 0.05516108649090116,
+      "min": 4.027530230989214
+    },
+    {
+      "name": "resolve/2000events",
+      "impl": "all_pairs",
+      "params": {
+        "events": 2000,
+        "records": 4000
+      },
+      "metric": "seconds",
+      "n": 3,
+      "mean": 15.85718793963315,
+      "median": 15.835228938958608,
+      "stddev": 0.16731186735353062,
+      "min": 15.701939846971072
+    }
+  ]
+}

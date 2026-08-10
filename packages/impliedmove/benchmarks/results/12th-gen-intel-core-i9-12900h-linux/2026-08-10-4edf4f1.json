@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "package": "impliedmove",
+  "version": "0.0.1.dev0",
+  "git_sha": "4edf4f1",
+  "timestamp": "2026-08-10T14:12:09+00:00",
+  "hardware": {
+    "id": "12th-gen-intel-core-i9-12900h-linux",
+    "cpu": "12th Gen Intel(R) Core(TM) i9-12900H",
+    "cores": 20,
+    "ram_gb": 62.5,
+    "os": "Linux 6.17.9-76061709-generic",
+    "python": "3.12.13"
+  },
+  "cases": [
+    {
+      "name": "bridge/4000events",
+      "impl": "bounded_bridge",
+      "params": {
+        "events": 4000,
+        "bad_factor_rate": 0.16666666666666666
+      },
+      "metric": "seconds",
+      "n": 78,
+      "mean": 0.014170112877857322,
+      "median": 0.012785404513124377,
+      "stddev": 0.005408688779281438,
+      "min": 0.011991909006610513
+    }
+  ]
+}
