@@ -140,10 +140,12 @@ def solve_portfolio_pulp(
 ) -> list[list[int]]:
     """Produce `num_lineups` distinct lineups by re-solving with no-good cuts.
 
-    This is the apples-to-apples comparison against `slatekit.build_lineups`, and
-    the shape of the cost is the point: every lineup is a fresh solve against a
-    problem that has grown by one constraint, so the total is superlinear in the
-    number of lineups while the greedy builder is linear.
+    This is the apples-to-apples comparison against `slatekit.build_lineups`.
+
+    Measured cost is roughly 15-20 seconds per lineup on a 90-player slate, and it
+    does not grow superlinearly at small portfolio sizes despite each solve
+    carrying one more no-good cut than the last — the cuts are cheap next to the
+    solve itself.
     """
     found: list[list[int]] = []
     cuts: list[frozenset[int]] = []

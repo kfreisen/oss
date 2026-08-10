@@ -8,10 +8,15 @@ Three implementations of the same job, on the same slate:
 * `milp_pulp` / `milp_ortools` — solver formulations from `baselines/milp.py`,
   producing distinct lineups via no-good cuts.
 
-Reported as **lineups per second**, not seconds, because the solvers scale
-differently: each lineup is a fresh solve against a problem one constraint larger,
-so their total is superlinear while the greedy builder is linear. A single
-wall-clock number at one portfolio size would hide that.
+Reported as **lineups per second**, not seconds, so portfolio sizes that differ by
+two orders of magnitude can be compared at all.
+
+A note on what was expected and what was measured: the solver path adds a no-good
+cut per lineup, so its cost looked like it should grow superlinearly. It does not,
+at these sizes — roughly 20 s/lineup at n=3 and 15 s/lineup at n=10, i.e. slightly
+*better* per lineup as the fixed setup cost amortizes. The cuts are cheap next to
+the solve. Claiming superlinearity would have been a nice story and the numbers do
+not support it.
 
 Quality is measured too, in `bench_quality.py` — speed alone would be a misleading
 thing to publish, since the solver produces *better individual lineups* and this
@@ -71,13 +76,14 @@ def make_slate(per_position: int = 10) -> PlayerPool:
 # Solvers are orders of magnitude slower, so they are measured at portfolio sizes
 # that finish in reasonable time; lineups-per-second is what gets compared.
 #
-# The MILP ceiling is deliberately low. Each additional lineup is a fresh solve
-# against a problem carrying one more no-good cut, so the cost grows superlinearly
-# — 20 lineups did not finish in fifteen minutes on the reference machine. That is
-# the result, not an obstacle to it, and it is visible at 3 versus 10 without
-# making `make bench` unrunnable.
-KERNEL_SIZES = [20, 150, 1000]
-REFERENCE_SIZES = [20, 150]
+# The MILP ceiling is deliberately low: at ~15-20 seconds per lineup, 20 lineups
+# did not finish in fifteen minutes on the reference machine. That is the result,
+# not an obstacle to it.
+# The small sizes exist so every implementation shares a case: a speedup table
+# needs the same case measured on both sides, and the MILP path cannot reach the
+# large ones.
+KERNEL_SIZES = [3, 10, 20, 150, 1000]
+REFERENCE_SIZES = [3, 10, 20, 150]
 MILP_SIZES = [3, 10]
 
 
