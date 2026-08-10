@@ -136,7 +136,21 @@ jobs:
 
       - if: matrix.package == 'slatekit'
         name: cargo test
-        run: cargo test --manifest-path rust/Cargo.toml
+        # The core crate has no Python dependency, which is why this needs no
+        # interpreter and no libpython on the loader path.
+        run: cargo test --manifest-path rust/Cargo.toml -p slatekit-core
+
+      # Rust coverage is gated separately from Python coverage, at a lower bar:
+      # the parallel merge and a few defensive branches cannot be provoked from a
+      # unit test without reaching into rayon's scheduling.
+      - if: matrix.package == 'slatekit' && matrix.python == '3.11'
+        name: install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - if: matrix.package == 'slatekit' && matrix.python == '3.11'
+        name: cargo llvm-cov
+        run: >-
+          cargo llvm-cov --manifest-path rust/Cargo.toml
+          -p slatekit-core --fail-under-lines 90
 
       - uses: actions/upload-artifact@v4
         with:

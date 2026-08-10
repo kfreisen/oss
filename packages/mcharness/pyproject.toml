@@ -49,6 +49,9 @@ bench = ["pytest>=8.0", "pytest-benchmark>=4.0", "psutil>=5.9"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Benchmarks live outside testpaths and are named bench_*.py so a normal `pytest`
+# run never picks them up; naming them here lets `pytest benchmarks/` collect them.
+python_files = ["test_*.py", "bench_*.py"]
 addopts = "-q --strict-markers --strict-config"
 # Ray emits DeprecationWarnings from its own dependencies that we cannot fix and
 # must not be gated on; everything else is still an error.

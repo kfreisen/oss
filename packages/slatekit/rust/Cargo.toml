@@ -1,19 +1,31 @@
-[package]
-name = "slatekit-native"
+# Two crates, deliberately.
+#
+# `slatekit-core` holds every algorithm and has no pyo3 dependency at all. That is
+# what makes `cargo test -p slatekit-core` and `cargo llvm-cov` work with no Python
+# interpreter, no libpython on the loader path, and no coverage noise from binding
+# glue.
+#
+# `slatekit-native` is the pyo3 extension: a `#[pymodule]`, some argument
+# marshalling, and nothing else worth measuring.
+#
+# The single-crate version of this could not run its own Rust unit tests. Enabling
+# pyo3's `extension-module` feature tells it not to link libpython, which is
+# required for the wheel and fatal for a test binary; disabling it makes the tests
+# link but then fail to load libpython at runtime. Splitting sidesteps the choice
+# rather than papering over it with LD_LIBRARY_PATH.
+
+[workspace]
+members = ["core", "native"]
+resolver = "2"
+
+[workspace.package]
 version = "0.0.1"
 edition = "2021"
 rust-version = "1.74"
 license = "Apache-2.0"
-description = "Compiled kernel for the slatekit roster optimizer"
 publish = false
 
-[lib]
-name = "slatekit_native"
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-pyo3 = { version = "0.24", features = ["extension-module", "abi3-py311"] }
-numpy = "0.24"
+[workspace.dependencies]
 rayon = "1.10"
 rand = "0.10"
 rand_xoshiro = "0.8"

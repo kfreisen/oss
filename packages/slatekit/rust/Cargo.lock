@@ -348,14 +348,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
+name = "slatekit-core"
+version = "0.0.1"
+dependencies = [
+ "rand",
+ "rand_xoshiro",
+ "rayon",
+]
+
+[[package]]
 name = "slatekit-native"
 version = "0.0.1"
 dependencies = [
  "numpy",
  "pyo3",
- "rand",
- "rand_xoshiro",
- "rayon",
+ "slatekit-core",
 ]
 
 [[package]]

@@ -51,6 +51,9 @@ bench = ["pytest>=8.0", "pytest-benchmark>=4.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Benchmarks live outside testpaths and are named bench_*.py so a normal `pytest`
+# run never picks them up; naming them here lets `pytest benchmarks/` collect them.
+python_files = ["test_*.py", "bench_*.py"]
 # --cov deliberately lives on the CI command line, not here. With it in addopts,
 # running a single test file locally fails the coverage threshold, which teaches
 # everyone to pass --no-cov and defeats the gate.

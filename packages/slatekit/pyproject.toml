@@ -36,14 +36,19 @@ build-backend = "maturin"
 # _native is private, and mkdocstrings cannot read a .so anyway.
 python-source = "python"
 module-name = "slatekit._native"
-manifest-path = "rust/Cargo.toml"
+manifest-path = "rust/native/Cargo.toml"
 # abi3 collapses the wheel matrix from (python versions x platforms) to one wheel
 # per platform. Building for the floor means the wheel also runs on every later
 # interpreter.
 features = ["pyo3/extension-module", "pyo3/abi3-py311"]
+# The sdist must carry every crate in the workspace, or building from source
+# fails for anyone on a platform without a published wheel.
 include = [
     { path = "rust/Cargo.toml", format = "sdist" },
-    { path = "rust/src/**/*", format = "sdist" },
+    { path = "rust/core/Cargo.toml", format = "sdist" },
+    { path = "rust/core/src/**/*", format = "sdist" },
+    { path = "rust/native/Cargo.toml", format = "sdist" },
+    { path = "rust/native/src/**/*", format = "sdist" },
 ]
 
 [dependency-groups]
@@ -66,6 +71,9 @@ bench = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Benchmarks live outside testpaths and are named bench_*.py so a normal `pytest`
+# run never picks them up; naming them here lets `pytest benchmarks/` collect them.
+python_files = ["test_*.py", "bench_*.py"]
 addopts = "-q --strict-markers --strict-config"
 filterwarnings = ["error"]
 markers = ["slow: excluded from the default run"]

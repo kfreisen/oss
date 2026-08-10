@@ -48,6 +48,9 @@ bench = ["pytest>=8.0", "pytest-benchmark>=4.0", "numpy>=1.26"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Benchmarks live outside testpaths and are named bench_*.py so a normal `pytest`
+# run never picks them up; naming them here lets `pytest benchmarks/` collect them.
+python_files = ["test_*.py", "bench_*.py"]
 addopts = "-q --strict-markers --strict-config"
 filterwarnings = ["error"]
 markers = ["slow: excluded from the default run"]

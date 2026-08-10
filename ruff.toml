@@ -44,12 +44,19 @@ convention = "google"
 ban-relative-imports = "all"
 
 [lint.per-file-ignores]
-"**/tests/**" = ["D", "ANN", "ARG", "S101", "PLR2004"]
-"**/benchmarks/**" = ["D", "ANN", "T201"]
+"**/tests/**" = ["D", "ANN", "ARG", "S101", "PLR2004", "PERF401"]
+# Benchmark fixtures are written for legibility over micro-efficiency: the point
+# is that a reader can see exactly what was measured.
+"**/benchmarks/**" = ["D", "ANN", "T201", "PERF401", "RUF046"]
 # marimo cells legitimately trip these: a bare expression is how a cell renders a
 # value (B018), cells bind names used only by other cells (F841), and imports live
 # inside cells rather than at module top (E402).
-"**/examples/**" = ["D", "ANN", "B018", "F841", "E402", "T201", "ARG"]
+# marimo generates cell signatures from the names a cell uses, so a cell reading
+# `DK_MLB_CLASSIC` gets a non-lowercase parameter (N803) that is not ours to
+# rename. RUF001 covers typography — en dashes belong in rendered prose.
+"**/examples/**" = [
+    "D", "ANN", "B018", "F841", "E402", "T201", "ARG", "N803", "PERF401", "RUF001",
+]
 
 [format]
 docstring-code-format = true

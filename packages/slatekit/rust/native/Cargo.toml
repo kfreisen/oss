@@ -1,0 +1,20 @@
+[package]
+name = "slatekit-native"
+description = "PyO3 bindings for slatekit-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "slatekit_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+slatekit-core = { path = "../core" }
+# `extension-module` is added by maturin at build time (see the `features` key in
+# pyproject.toml) rather than being enabled here, so that anything depending on
+# this crate outside a wheel build still links.
+pyo3 = { version = "0.24", features = ["abi3-py311"] }
+numpy = "0.24"
