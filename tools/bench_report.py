@@ -111,9 +111,7 @@ def git_sha() -> str:
     sha = _run(["git", "-C", str(REPO_ROOT), "rev-parse", "--short", "HEAD"])
     status = _run(["git", "-C", str(REPO_ROOT), "status", "--porcelain"], default="")
     changed = [
-        line
-        for line in status.splitlines()
-        if line.strip() and "/benchmarks/results/" not in line
+        line for line in status.splitlines() if line.strip() and "/benchmarks/results/" not in line
     ]
     return f"{sha}-dirty" if changed else sha
 

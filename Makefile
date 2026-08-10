@@ -5,6 +5,11 @@
 
 PKGS := slatekit washbook venuematch mcharness impliedmove
 
+# Pinned to match .pre-commit-config.yaml. An unpinned `uvx ruff` picks the latest
+# release, and ruff's formatter changes between versions — so `make lint` passing
+# while the pre-commit hook fails in CI is not a hypothetical, it happened.
+RUFF := ruff@0.14.5
+
 .PHONY: help test test-all lint fmt typecheck bench bench-quick examples docs docs-build lock-all lowest-bounds clean
 
 help:
@@ -33,12 +38,12 @@ test-all:
 	@for p in $(PKGS); do echo "=== $$p ==="; $(MAKE) --no-print-directory test PKG=$$p || exit 1; done
 
 lint:
-	uvx ruff check .
-	uvx ruff format --check .
+	uvx $(RUFF) check .
+	uvx $(RUFF) format --check .
 
 fmt:
-	uvx ruff format .
-	uvx ruff check --fix .
+	uvx $(RUFF) format .
+	uvx $(RUFF) check --fix .
 
 typecheck: _require_pkg
 	cd packages/$(PKG) && uv run mypy src

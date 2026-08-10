@@ -23,6 +23,10 @@ Install the hooks once, at the repo root:
 uvx pre-commit install
 ```
 
+**Run `pre-commit`, not bare `ruff`.** The hooks pin a ruff version; a bare
+`uvx ruff` resolves to the latest release, and the formatter's output changes
+between versions. `make lint` uses the pinned version for the same reason.
+
 ## Repository shape
 
 Each package under `packages/` is standalone: its own `pyproject.toml`, its own `uv.lock`, its
