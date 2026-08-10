@@ -121,7 +121,8 @@ unsafe fn sum_positive_excess_avx2(scores: &[f32], threshold: f32) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::{Rng, SeedableRng};
+    // rand 0.10 moved the range/sampling helpers off `Rng` onto `RngExt`.
+    use rand::{RngExt, SeedableRng};
     use rand_xoshiro::Xoshiro256PlusPlus;
 
     #[test]

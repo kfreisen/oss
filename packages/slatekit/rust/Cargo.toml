@@ -15,8 +15,8 @@ crate-type = ["cdylib", "rlib"]
 pyo3 = { version = "0.24", features = ["extension-module", "abi3-py311"] }
 numpy = "0.24"
 rayon = "1.10"
-rand = "0.9"
-rand_xoshiro = "0.7"
+rand = "0.10"
+rand_xoshiro = "0.8"
 
 [profile.release]
 lto = "thin"

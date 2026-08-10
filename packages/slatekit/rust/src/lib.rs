@@ -6,6 +6,7 @@
 
 use pyo3::prelude::*;
 
+pub mod roster;
 pub mod simd;
 
 /// Returns the SIMD instruction set the kernel selected at runtime.
