@@ -45,7 +45,7 @@ dev = [
 ]
 # psutil and the profiler drive the memory/CPU side of the benchmark, which is
 # half the story for a parallelism change.
-bench = ["pytest>=8.0", "pytest-benchmark>=4.0", "psutil>=5.9"]
+bench = ["pytest>=8.0", "pytest-benchmark>=4.0", "psutil>=5.9", "pandas>=2.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
