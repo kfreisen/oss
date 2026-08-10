@@ -89,7 +89,7 @@ def test_both_explore_a_comparable_share_of_the_pool(
     """Neither implementation may collapse onto a narrow core of players.
 
     This is the property that catches a real class of porting bug — a broken
-    objective or a mis-seeded generator still produces valid, distinct lineups
+    objective or an incorrectly seeded generator still produces valid, distinct lineups
     while drawing from a fraction of the pool, and a validity check alone would
     pass it.
     """

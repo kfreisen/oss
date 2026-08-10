@@ -6,9 +6,9 @@ Two models of the same rule, answering different questions:
   freely and account for §1091 as a taxable account actually experiences it.
   Disallowed losses roll into the replacement's basis, holding periods tack, and
   chains still open at the end are reported rather than quietly forgiven.
-- **Cooldown** ([`apply_cooldown`][washbook.cooldown.apply_cooldown]) — refuse to
-  re-enter within the window so no wash sale ever occurs. This changes the equity
-  curve; the cost shows up as suppressed entries.
+- **Cooldown** ([`suppress_after_losses`][washbook.cooldown.suppress_after_losses]) —
+  refuse to re-enter within the window so no wash sale ever occurs. This changes
+  the equity curve; the cost shows up as suppressed entries.
 
 Neither is tax advice, and the boundaries of what is modelled are documented on
 each function rather than left to be discovered.
@@ -16,11 +16,13 @@ each function rather than left to be discovered.
 
 from __future__ import annotations
 
+from washbook.cooldown import CooldownResult, suppress_after_losses
 from washbook.defer import DeferralResult, WashSaleConfig, apply_wash_sales
 from washbook.ledger import ChainScope, HoldingPeriod, TaxedTrade, Trade
 
 __all__ = [
     "ChainScope",
+    "CooldownResult",
     "DeferralResult",
     "HoldingPeriod",
     "TaxedTrade",
@@ -28,6 +30,7 @@ __all__ = [
     "WashSaleConfig",
     "__version__",
     "apply_wash_sales",
+    "suppress_after_losses",
 ]
 
 __version__ = "0.0.1.dev0"

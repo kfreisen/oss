@@ -82,7 +82,7 @@ repos:
 
       - id: cargo-fmt
         name: cargo fmt
-        entry: cargo fmt --manifest-path packages/slatekit/rust/Cargo.toml --
+        entry: cargo fmt --all --manifest-path packages/slatekit/rust/Cargo.toml --
         language: system
         types: [rust]
         files: ^packages/slatekit/rust/
