@@ -1,0 +1,1 @@
+--8<-- "packages/slatekit/README.md"

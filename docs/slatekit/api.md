@@ -1,0 +1,3 @@
+# slatekit API reference
+
+::: slatekit

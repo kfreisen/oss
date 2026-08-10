@@ -1,0 +1,184 @@
+name: ci
+
+# One workflow for all five packages, rather than five path-filtered workflows.
+#
+# `on: push: paths:` looks like the obvious way to skip untouched packages, but a
+# required status check that never runs leaves a pull request pending forever. So
+# this workflow always runs, computes which packages changed, fans out over only
+# those, and ends in `ci-ok` — which always runs and is the single required check.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.select.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared:
+              - '.github/workflows/ci.yml'
+              - 'ruff.toml'
+              - 'uv.toml'
+              - '.pre-commit-config.yaml'
+              - 'tools/**'
+            slatekit: ['packages/slatekit/**']
+            washbook: ['packages/washbook/**']
+            venuematch: ['packages/venuematch/**']
+            mcharness: ['packages/mcharness/**']
+            impliedmove: ['packages/impliedmove/**']
+
+      - id: select
+        env:
+          CHANGED: ${{ steps.filter.outputs.changes }}
+          ALL: '["slatekit","washbook","venuematch","mcharness","impliedmove"]'
+        run: |
+          # A change to shared tooling can break any package, so it expands to all.
+          if echo "$CHANGED" | jq -e 'index("shared")' > /dev/null; then
+            echo "packages=$ALL" >> "$GITHUB_OUTPUT"
+          else
+            echo "packages=$(echo "$CHANGED" | jq -c 'map(select(. != "shared"))')" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    needs: changes
+    if: needs.changes.outputs.packages != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        # Oldest supported and newest stable. The floor catches use of newer syntax;
+        # the ceiling catches dependencies that have not caught up.
+        python: ['3.11', '3.13']
+    name: test ${{ matrix.package }} (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # slatekit's extension is built from source during `uv sync`, so the toolchain
+      # has to be present before the sync step rather than alongside it.
+      - if: matrix.package == 'slatekit'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - if: matrix.package == 'slatekit'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/slatekit/rust
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: packages/${{ matrix.package }}/uv.lock
+          python-version: ${{ matrix.python }}
+
+      # --locked, not --frozen: this fails loudly when pyproject.toml was edited
+      # without re-locking, instead of silently resolving something else.
+      - name: sync
+        run: uv sync --locked --all-extras
+
+      - name: ruff format
+        run: uvx ruff format --check .
+
+      - name: ruff check
+        run: uvx ruff check .
+
+      - name: mypy
+        run: uv run mypy
+
+      - name: pytest
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
+
+      # Executes each notebook and fails on any exception, so examples cannot rot
+      # into documentation that no longer runs.
+      - name: examples execute
+        run: |
+          for nb in examples/*.py; do
+            echo "--- $nb"
+            uv run marimo export html "$nb" -o /dev/null
+          done
+
+      # Proves the benchmark harness still runs. Deliberately not timed: shared
+      # runners vary by roughly 2x and a flaky perf gate is a gate people ignore.
+      - name: benchmarks smoke-run
+        run: |
+          if [ -n "$(find benchmarks -name 'bench_*.py' -print -quit)" ]; then
+            uv run --group bench pytest benchmarks/ -q --benchmark-disable
+          else
+            echo "no benchmarks yet"
+          fi
+
+      - if: matrix.package == 'slatekit'
+        name: cargo fmt
+        run: cargo fmt --manifest-path rust/Cargo.toml -- --check
+
+      - if: matrix.package == 'slatekit'
+        name: cargo clippy
+        run: cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
+
+      - if: matrix.package == 'slatekit'
+        name: cargo test
+        run: cargo test --manifest-path rust/Cargo.toml
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.package }}-py${{ matrix.python }}
+          path: packages/${{ matrix.package }}/coverage.xml
+          if-no-files-found: error
+
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: pre-commit
+        run: uvx pre-commit run --all-files --show-diff-on-failure
+      - name: packages do not import each other
+        run: python3 tools/check_no_cross_imports.py
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.12'
+      # --strict turns broken links and unresolved mkdocstrings references into
+      # failures. The docs read package source statically, so no package needs to
+      # be installed here.
+      - run: uv run --project docs mkdocs build --strict
+
+  # Always runs, so it is a stable required status check even when every package
+  # job is skipped. This is the only check branch protection should require.
+  ci-ok:
+    if: always()
+    needs: [changes, test, hygiene, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: all required jobs succeeded or were skipped
+        run: |
+          echo '${{ toJSON(needs) }}' | tee /dev/stderr \
+            | jq -e 'all(.[]; .result == "success" or .result == "skipped")'

@@ -1,0 +1,30 @@
+[package]
+name = "slatekit-native"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.74"
+license = "Apache-2.0"
+description = "Compiled kernel for the slatekit roster optimizer"
+publish = false
+
+[lib]
+name = "slatekit_native"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.24", features = ["extension-module", "abi3-py311"] }
+numpy = "0.24"
+rayon = "1.10"
+rand = "0.9"
+rand_xoshiro = "0.7"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+# Deliberately NOT panic = "abort": PyO3 converts Rust panics into Python
+# exceptions, which requires unwinding. Aborting would take the interpreter down.
+
+# There is intentionally no .cargo/config.toml with `-C target-cpu=native`.
+# That flag bakes the build machine's ISA into the wheel, so a wheel built on a
+# runner with AVX-512 executes an illegal instruction on a user's older CPU.
+# The AVX2 kernels use runtime `is_x86_feature_detected!` dispatch instead.

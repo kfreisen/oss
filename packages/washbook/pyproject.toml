@@ -1,0 +1,72 @@
+[project]
+name = "washbook"
+version = "0.0.1.dev0"
+description = "After-tax backtest accounting: vectorized wash-sale blackout and an IRS §1091 deferral ledger."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Kevin Freisen", email = "freise29@gmail.com" }]
+keywords = ["wash-sale", "backtesting", "taxes", "irs-1091", "polars", "after-tax"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Typing :: Typed",
+]
+dependencies = ["polars>=1.0"]
+
+[project.urls]
+Homepage = "https://github.com/kfreisen/oss/tree/main/packages/washbook"
+Documentation = "https://kfreisen.github.io/oss/washbook/"
+Source = "https://github.com/kfreisen/oss"
+Changelog = "https://github.com/kfreisen/oss/blob/main/packages/washbook/CHANGELOG.md"
+Issues = "https://github.com/kfreisen/oss/issues"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/washbook"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "tests/", "README.md", "CHANGELOG.md", "LICENSE"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.100",
+    "mypy>=1.11",
+    "marimo>=0.10",
+]
+# The baseline under benchmarks/baselines/ is deliberately plain Python + polars,
+# so this group only adds the runner. Nothing here reaches a user's install.
+bench = ["pytest>=8.0", "pytest-benchmark>=4.0", "numpy>=1.26"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers --strict-config"
+filterwarnings = ["error"]
+markers = ["slow: excluded from the default run"]
+
+[tool.coverage.run]
+source = ["washbook"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@(typing\\.)?overload",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+files = ["src"]

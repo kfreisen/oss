@@ -1,0 +1,3 @@
+# impliedmove API reference
+
+::: impliedmove

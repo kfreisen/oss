@@ -1,0 +1,48 @@
+name: lowest-bounds
+
+# Resolves each package against the *lowest* version satisfying every declared
+# direct dependency, then runs its tests.
+#
+# This is the check that keeps a lower bound honest. `polars>=1.0` is a promise that
+# the package works with polars 1.0, and normal CI never tests it — the lockfile
+# pins something recent, so a lower bound can be wrong for a year without anyone
+# noticing until a user with an older pin files a confusing bug.
+#
+# It runs weekly rather than per-change because a failure here means "the declared
+# floor is wrong", which is worth fixing but never worth blocking a merge on.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lowest:
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [slatekit, washbook, venuematch, mcharness, impliedmove]
+    name: lowest bounds ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - if: matrix.package == 'slatekit'
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          # Test the floor interpreter against the floor dependencies: that pairing
+          # is the one a conservative downstream user is most likely to have.
+          python-version: '3.11'
+
+      # No --locked: the point is to resolve differently from the lockfile.
+      - run: uv sync --resolution lowest-direct --all-extras
+
+      - run: uv run pytest -q

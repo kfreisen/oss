@@ -1,0 +1,158 @@
+name: release-slatekit
+
+# slatekit ships a compiled extension, so it needs a wheel per platform rather than
+# one pure-Python wheel.
+#
+# The matrix is five entries, not twenty, because the extension is built against the
+# stable ABI (`pyo3/abi3-py311`). One cp311-abi3 wheel per platform runs on 3.11 and
+# every later interpreter — verified locally across 3.11 through 3.14 before this
+# workflow was written.
+#
+# All of these runners are free for public repositories, including the arm64 Linux
+# and Apple Silicon ones. Do not switch any of them to a larger runner; those bill.
+
+on:
+  push:
+    tags: ['slatekit-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: parse
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG##*-v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.12'
+      - if: startsWith(github.ref, 'refs/tags/')
+        name: tag matches project version
+        working-directory: packages/slatekit
+        run: |
+          actual=$(uv version --short)
+          expected="${{ steps.parse.outputs.version }}"
+          if [ "$actual" != "$expected" ]; then
+            echo "tag says $expected but pyproject.toml says $actual" >&2
+            exit 1
+          fi
+
+  wheels:
+    needs: meta
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            archs: x86_64
+          - os: ubuntu-24.04-arm
+            archs: aarch64
+          - os: macos-14
+            archs: arm64
+          # Intel macOS. GitHub retired macos-13; macos-15-intel is the current
+          # x86_64 runner, and it is still free for public repositories.
+          - os: macos-15-intel
+            archs: x86_64
+          - os: windows-latest
+            archs: AMD64
+    name: wheels ${{ matrix.os }} ${{ matrix.archs }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: pypa/cibuildwheel@v3.2.0
+        with:
+          package-dir: packages/slatekit
+        env:
+          # abi3 means one build covers every supported interpreter, so build only
+          # against the floor.
+          CIBW_BUILD: cp311-*
+          CIBW_ARCHS: ${{ matrix.archs }}
+          CIBW_SKIP: '*musllinux_aarch64 pp*'
+          CIBW_BUILD_FRONTEND: build[uv]
+          CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
+          # The manylinux images do not carry a Rust toolchain.
+          CIBW_BEFORE_ALL_LINUX: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          # Runs the test suite against the *repaired* wheel inside the target
+          # environment. This is what catches a wheel that imports fine on the
+          # builder and fails on a user's machine after auditwheel rewrites it.
+          CIBW_TEST_REQUIRES: pytest hypothesis
+          CIBW_TEST_COMMAND: pytest {project}/packages/slatekit/tests -q
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.archs }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  sdist:
+    needs: meta
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.12'
+      - run: uv build --sdist
+        working-directory: packages/slatekit
+
+      # An sdist that omits the Rust sources is unbuildable and the failure only
+      # shows up for a user on an unmatched platform. Build it here, from the
+      # tarball, with nothing else on disk.
+      - name: sdist builds from source
+        run: |
+          uvx --from 'maturin>=1.7,<2.0' maturin --version
+          tmp=$(mktemp -d)
+          tar -xzf packages/slatekit/dist/*.tar.gz -C "$tmp"
+          uv pip install --python "$(uv python find 3.12)" --system-site-packages \
+            --target "$tmp/install" --no-binary :all: "$tmp"/slatekit-*
+          echo "sdist built successfully"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: packages/slatekit/dist/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    needs: [meta, wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/slatekit
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+      - name: what is about to be published
+        run: ls -la dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

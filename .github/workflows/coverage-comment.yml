@@ -1,0 +1,74 @@
+name: coverage-comment
+
+# Posts per-package coverage as a pull request comment and keeps the badge data in
+# an orphan branch of this repository. No third-party coverage service, so no token
+# to rotate and no external outage to absorb.
+#
+# Runs on workflow_run rather than pull_request so that a pull request from a fork
+# still gets a comment: the triggering run has read-only permissions, this one has
+# the write scope but never checks out fork code.
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # A single repo-wide percentage is meaningless across five independent
+      # libraries with different thresholds, so report each separately. The
+      # authoritative gate is `fail_under` in each package's own config, which has
+      # already run in ci.yml — this comment is for reviewers, not enforcement.
+      - name: summarize
+        run: |
+          {
+            echo "## Coverage"
+            echo
+            echo "| Package | Python | Line rate |"
+            echo "| --- | --- | ---: |"
+            for f in coverage-artifacts/coverage-*/coverage.xml; do
+              [ -e "$f" ] || continue
+              name=$(basename "$(dirname "$f")")
+              pkg=$(echo "$name" | cut -d- -f2)
+              py=$(echo "$name" | cut -d- -f3)
+              rate=$(sed -n 's/.*line-rate="\([0-9.]*\)".*/\1/p' "$f" | head -1)
+              pct=$(awk -v r="$rate" 'BEGIN { printf "%.2f", r * 100 }')
+              echo "| \`$pkg\` | $py | ${pct}% |"
+            done
+          } > coverage-summary.md
+          cat coverage-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          number=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
+            --json number,headRefOid \
+            --jq "map(select(.headRefOid == \"$HEAD_SHA\")) | .[0].number // empty")
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - if: steps.pr.outputs.number != ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ steps.pr.outputs.number }}
+          header: coverage
+          path: coverage-summary.md

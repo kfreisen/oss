@@ -1,0 +1,84 @@
+name: bench
+
+# Deliberately never runs on a pull request.
+#
+# Shared runners vary by roughly 2x depending on what else is on the host, so a
+# timing assertion here would fail for reasons unrelated to the code. The numbers
+# that get published are measured on known hardware and committed by hand — see
+# docs/benchmarks.md. This workflow exists to catch benchmark code that has stopped
+# running at all, and to produce a rough trend as an artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to benchmark (blank for all)
+        required: false
+        default: ''
+  schedule:
+    # Sundays, 06:00 UTC.
+    - cron: '0 6 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  # The matrix is computed rather than literal because a job-level `if` cannot see
+  # the `matrix` context — filtering has to happen before the fan-out, not during it.
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.pick.outputs.packages }}
+    steps:
+      - id: pick
+        env:
+          ONLY: ${{ inputs.package }}
+          ALL: '["slatekit","washbook","venuematch","mcharness","impliedmove"]'
+        run: |
+          if [ -z "$ONLY" ]; then
+            echo "packages=$ALL" >> "$GITHUB_OUTPUT"
+          else
+            echo "packages=[\"$ONLY\"]" >> "$GITHUB_OUTPUT"
+          fi
+
+  bench:
+    needs: select
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.select.outputs.packages) }}
+    name: bench ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - if: matrix.package == 'slatekit'
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: packages/${{ matrix.package }}/uv.lock
+          python-version: '3.12'
+
+      - run: uv sync --locked --all-extras
+
+      - name: run benchmarks
+        run: |
+          if [ -z "$(find benchmarks -name 'bench_*.py' -print -quit)" ]; then
+            echo "no benchmarks yet for ${{ matrix.package }}"
+            exit 0
+          fi
+          uv run --group bench pytest benchmarks/ --benchmark-json=.benchmark.json
+
+      # Uploaded, never committed. Committing a runner's timings would put numbers
+      # into the docs that nobody can reproduce or attribute to a machine.
+      - if: hashFiles(format('packages/{0}/.benchmark.json', matrix.package)) != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/.benchmark.json
+          retention-days: 90
