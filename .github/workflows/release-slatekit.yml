@@ -25,7 +25,7 @@ jobs:
     outputs:
       version: ${{ steps.parse.outputs.version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - id: parse
         env:
           TAG: ${{ github.ref_name }}
@@ -67,11 +67,11 @@ jobs:
     name: wheels ${{ matrix.os }} ${{ matrix.archs }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: pypa/cibuildwheel@v3.2.0
+      - uses: pypa/cibuildwheel@v4.2.0
         with:
           package-dir: packages/slatekit
         env:
@@ -91,7 +91,7 @@ jobs:
           CIBW_TEST_COMMAND: pytest {project}/packages/slatekit/tests -q
           MACOSX_DEPLOYMENT_TARGET: '11.0'
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.archs }}
           path: wheelhouse/*.whl
@@ -101,7 +101,7 @@ jobs:
     needs: meta
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.12'
@@ -120,7 +120,7 @@ jobs:
             --target "$tmp/install" --no-binary :all: "$tmp"/slatekit-*
           echo "sdist built successfully"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: packages/slatekit/dist/*.tar.gz
@@ -137,12 +137,12 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           path: dist
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: sdist
           path: dist
@@ -152,7 +152,7 @@ jobs:
 
       - uses: pypa/gh-action-pypi-publish@release/v1
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           generate_release_notes: true
