@@ -41,7 +41,7 @@ jobs:
       run:
         working-directory: packages/${{ needs.meta.outputs.package }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v7
         with:
@@ -75,7 +75,7 @@ jobs:
             --with "$(echo dist/*.whl)" \
             python -c "import $PKG; print($PKG.__name__, $PKG.__version__)"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: packages/${{ needs.meta.outputs.package }}/dist/
@@ -94,7 +94,7 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
