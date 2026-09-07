@@ -31,7 +31,7 @@ jobs:
       run:
         working-directory: packages/${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - if: matrix.package == 'slatekit'
         uses: dtolnay/rust-toolchain@stable
