@@ -23,9 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: coverage-*
           path: coverage-artifacts
@@ -67,7 +67,7 @@ jobs:
           echo "number=$number" >> "$GITHUB_OUTPUT"
 
       - if: steps.pr.outputs.number != ''
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           number: ${{ steps.pr.outputs.number }}
           header: coverage

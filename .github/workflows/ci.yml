@@ -25,9 +25,9 @@ jobs:
     outputs:
       packages: ${{ steps.select.outputs.packages }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -71,7 +71,7 @@ jobs:
       run:
         working-directory: packages/${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # slatekit's extension is built from source during `uv sync`, so the toolchain
       # has to be present before the sync step rather than alongside it.
@@ -160,7 +160,7 @@ jobs:
           cargo llvm-cov --manifest-path rust/Cargo.toml
           -p slatekit-core --fail-under-lines 90
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ matrix.package }}-py${{ matrix.python }}
           path: packages/${{ matrix.package }}/coverage.xml
@@ -169,7 +169,7 @@ jobs:
   hygiene:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.12'
@@ -184,7 +184,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.12'
